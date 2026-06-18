@@ -1,0 +1,36 @@
+name: Arbiter Evidence
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  submit-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run tests
+        run: npm test
+      - name: Submit evidence to Arbiter
+        env:
+          # Secrets: sensitive credentials only
+          DEMO_PRIVATE_KEY_PEM: ${{ secrets.DEMO_PRIVATE_KEY_PEM }}
+          ARBITER_API_TOKEN: ${{ secrets.ARBITER_API_TOKEN }}
+          # Variables: non-sensitive config (visible in CI logs — aids debugging)
+          ARBITER_BASE_URL: ${{ vars.ARBITER_BASE_URL }}
+          ISSUER_KEY_ID: ${{ vars.ARBITER_ISSUER_KEY_ID }}
+          REPO: ${{ github.repository }}
+          # MUST use pull_request.head.sha — NOT $GITHUB_SHA.
+          # On pull_request events, $GITHUB_SHA is the synthetic merge commit SHA.
+          # Arbiter binds to pr.head.sha — using $GITHUB_SHA guarantees binding DENY.
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node .github/scripts/produce-evidence.mjs | \
+            curl -sS -f -X POST \
+              -H "X-Arbiter-Token: $ARBITER_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data-binary @- \
+              "$ARBITER_BASE_URL/api/evidence/$REPO/$PR_HEAD_SHA"
