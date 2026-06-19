@@ -29,7 +29,7 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           node .github/scripts/produce-evidence.mjs | \
-            curl -sS -f -X POST \
+            curl -sS --fail-with-body -X POST \
               -H "X-Arbiter-Token: $ARBITER_API_TOKEN" \
               -H "Content-Type: application/json" \
               --data-binary @- \
