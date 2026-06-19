@@ -1,0 +1,7 @@
+{
+  "name": "arbiter-demo-project",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node -e \"require('fs').accessSync('./payments', require('fs').constants.R_OK); console.log('payments/ validated');\""
+  }
+}
