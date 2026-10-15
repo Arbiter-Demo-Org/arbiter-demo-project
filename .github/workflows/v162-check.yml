@@ -1,0 +1,8 @@
+name: v162-check
+on:
+  pull_request:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "PLAN-162 V1/V7 probe"
